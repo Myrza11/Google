@@ -12,6 +12,7 @@ import java.awt.Image;
 import java.awt.Color;
 import java.awt.Font;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,8 +44,9 @@ public class Renderer {
     private void renderElement(RenderNode node, String parentTag) {
         drawRect(node);
         String tagToUse = node.getTagName().equals("text") ? parentTag : node.getTagName();
-        System.out.println(tagToUse);
         renderers.getOrDefault(tagToUse, this::renderDefault).accept(node);
+
+        System.out.println(tagToUse);
 
         if (node.getTextContent() != null && node.getTextContent().isEmpty()
                 && !node.getChildren().isEmpty() && !node.getTagName().equals("ul")) {
@@ -155,43 +157,35 @@ public class Renderer {
     }
 
     @SuppressWarnings("deprecation")
-    private Image renderImage(RenderNode node) {
+    private void renderImage(RenderNode node) {
         try {
             String content = node.getTextContent();
-            URL imgUrl;
-
-            if (content.startsWith("http") || content.startsWith("https")) {
-                imgUrl = new URL(content);
-            } else {
-                imgUrl = new URL(model.getBaseUrl() + content);
-            }
+            URL imgUrl = new URL(content);
 
             Image img = ImageIO.read(imgUrl);
 
-            int imgWidth = img.getWidth(null);
-            int imgHeight = img.getHeight(null);
+            if (img != null) {
+                int imgWidth = img.getWidth(null);
+                int imgHeight = img.getHeight(null);
 
-            if (imgWidth > node.getWidth() || imgHeight > node.getHeight()) {
-                double widthRatio = node.getWidth() / imgWidth;
-                double scale = widthRatio;
+                if (imgWidth > node.getWidth() || imgHeight > node.getHeight()) {
+                    double widthRatio = node.getWidth() / imgWidth;
+                    double scale = widthRatio;
 
-                int scaledWidth = (int) (imgWidth * scale);
-                int scaledHeight = (int) (imgHeight * scale);
+                    int scaledWidth = (int) (imgWidth * scale);
+                    int scaledHeight = (int) (imgHeight * scale);
 
-                node.setHeight(scaledHeight);
+                    node.setHeight(scaledHeight);
 
-                g2d.drawImage(img, node.getX(), node.getY(), scaledWidth, scaledHeight, null);
-            } else {
-                g2d.drawImage(img, node.getX(), node.getY(), imgWidth, imgHeight, null);
+                    g2d.drawImage(img, node.getX(), node.getY(), scaledWidth, scaledHeight, null);
+                } else {
+                    g2d.drawImage(img, node.getX(), node.getY(), imgWidth, imgHeight, null);
+                }
             }
-
-            return img;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            e.getMessage();
         }
-        return null;
     }
-
 
     private void renderDefault(RenderNode node) {}
 

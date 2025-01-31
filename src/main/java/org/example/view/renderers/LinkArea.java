@@ -14,6 +14,10 @@ public class LinkArea {
         setUrl(baseUrl);
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     public void setUrl(String baseUrl) {
         if (!(url.startsWith("http") && url.startsWith("https")))
             url = baseUrl + url;

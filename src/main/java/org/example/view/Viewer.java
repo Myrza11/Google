@@ -16,7 +16,8 @@ public class Viewer extends JFrame {
     public Viewer() {
         controller = new Controller(this);
         Model model = controller.getModel();
-        canvas = new Canvas(model);
+        ScrollPanel scrollPanel = new ScrollPanel();
+        canvas = new Canvas(model, scrollPanel);
 
         controller.attachCanvasMouseEvents(canvas);
 
@@ -28,13 +29,10 @@ public class Viewer extends JFrame {
         createSearchField();
 
         add(canvas, BorderLayout.CENTER);
+        add(scrollPanel, BorderLayout.EAST);
 
 
         setVisible(true);
-    }
-
-    public void update() {
-        canvas.repaint();
     }
 
     private void createSearchField() {
@@ -76,5 +74,9 @@ public class Viewer extends JFrame {
 
     public Canvas getCanvas() {
         return canvas;
+    }
+
+    public void setNewUrl(String url) {
+        jTextField.setText(url);
     }
 }

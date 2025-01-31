@@ -36,7 +36,9 @@ public class HtmlParser {
                             element.setContent(src);
                         } else {
                             if (url != null) {
-                                element.setContent(url + src);
+                                src = url + src;
+                                src = src.replace(" ", "%20");
+                                element.setContent(src);
                             } else {
                                 element.setContent(src);
                             }

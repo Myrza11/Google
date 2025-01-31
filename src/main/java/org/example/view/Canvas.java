@@ -5,11 +5,8 @@ import org.example.model.renderTree.RenderTree;
 import org.example.view.renderers.LinkArea;
 import org.example.view.renderers.Renderer;
 
-import javax.swing.JPanel;
-import java.awt.Dimension;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,15 +18,15 @@ public class Canvas extends JPanel {
     private final List<LinkArea> linkAreas;
     private int scrollOffsetY;
     private int maxScrollOffsetY;
+    private ScrollPanel scrollPanel;
 
-
-    public Canvas(Model model) {
+    public Canvas(Model model, ScrollPanel scrollPanel) {
         this.model = model;
+        this.scrollPanel = scrollPanel;
 
         renderer = new Renderer(model);
         linkAreas = new ArrayList<>();
         scrollOffsetY = 0;
-
     }
 
     @Override
@@ -45,11 +42,12 @@ public class Canvas extends JPanel {
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.translate(0, -scrollOffsetY);
+
         if (model.getHttpResponse() != null) {
             g2d.setColor(Color.WHITE);
             g2d.fillRect(0, 0, getWidth(), getHeight());
             linkAreas.clear();
+            g2d.translate(0, -scrollOffsetY);
 
             if (model.getIsUrlChanged())
                 renderTree = model.parse();
@@ -86,6 +84,12 @@ public class Canvas extends JPanel {
     }
 
     public void setScrollOffsetY(int scrollOffsetY) {
-        this.scrollOffsetY = scrollOffsetY;
+        this.scrollOffsetY = Math.max(0, Math.min(scrollOffsetY, maxScrollOffsetY));
+        repaint();
+
+        // Обновляем позицию скролл-бара в ScrollPanel
+        if (scrollPanel != null) {
+            scrollPanel.updateScroll(scrollOffsetY, maxScrollOffsetY);
+        }
     }
 }

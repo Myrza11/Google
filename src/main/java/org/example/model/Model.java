@@ -6,7 +6,6 @@ import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
 import org.example.model.html.HtmlParser;
 import org.example.model.renderTree.MergeCssomDom;
-import org.example.model.renderTree.RenderNode;
 import org.example.model.renderTree.RenderTree;
 import org.example.model.socket.HttpResponse;
 import org.example.model.socket.Socket;
@@ -36,7 +35,7 @@ public class Model {
         viewer.getController().clearLinkAreas();
         httpResponse = socket.fetchHtmlWithCss(siteUrl);
         isUrlChanged = true;
-        viewer.update();
+        viewer.getCanvas().repaint();
     }
 
     public RenderTree parse() {
@@ -50,7 +49,6 @@ public class Model {
         }
 
         isUrlChanged = false;
-
         return renderTree;
     }
 

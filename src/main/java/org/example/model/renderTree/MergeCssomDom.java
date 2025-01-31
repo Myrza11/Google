@@ -210,27 +210,25 @@ public class MergeCssomDom {
         }
 
         try {
-            BufferedImage img;
 
-            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-                @SuppressWarnings("deprecation")
+
                 URL url = new URL(imagePath);
-                img = ImageIO.read(url);
-            } else {
-                img = ImageIO.read(new File(imagePath));
-            }
+                BufferedImage img = ImageIO.read(url);
+
 
             if (img != null) {
                 HashMap<String, String> styles = imgNode.getAppliedStyles();
                 if (styles.get("width") != null) {
                     double styleWidth = Double.parseDouble(styles.get("width").replace("px", "").replace("%", "").trim());
-                    if (styles.get("width").contains("px")) {
-                        imgNode.setWidth(styleWidth);
-                        return img.getHeight() / (img.getWidth() / styleWidth);
-                    } else if (styles.get("width").contains("%")) {
-                        double nodeWidth = (imgNode.getParent().getWidth() / 100) * styleWidth;
-                        imgNode.setWidth(nodeWidth);
-                        return img.getHeight() / (img.getWidth() / nodeWidth);
+                    if (styles.get("width").contains("px") || styles.get("width").contains("%")) {
+                        if (styles.get("width").contains("px")) {
+                            imgNode.setWidth(styleWidth);
+                            return img.getHeight() / (img.getWidth() / styleWidth);
+                        } else if (styles.get("width").contains("%")) {
+                            double nodeWidth = (imgNode.getParent().getWidth() / 100) * styleWidth;
+                            imgNode.setWidth(nodeWidth);
+                            return img.getHeight() / (img.getWidth() / nodeWidth);
+                        }
                     }
                 }
                 imgNode.setWidth(img.getWidth());
@@ -239,7 +237,7 @@ public class MergeCssomDom {
 
             return 0;
         } catch (IOException e) {
-            e.printStackTrace();
+            e.getMessage();
             return 0;
         }
     }
@@ -346,19 +344,22 @@ public class MergeCssomDom {
     private void setHeightToChildren(RenderNode renderNode) {
         String strHeight = renderNode.getAppliedStyles().get("height");
 
-        if (strHeight != null && !strHeight.isEmpty()){
-            int intHeight = Integer.parseInt(strHeight.replace("px", "").replace("%", "").trim());
-            if (strHeight.contains("px")){
-                renderNode.setHeight(intHeight);
-            } else if (strHeight.endsWith("%")) {
-                renderNode.setHeight(getHeightFromParent(renderNode, intHeight));
-            } else {
-                renderNode.setHeight(intHeight);
+        if (strHeight != null && (strHeight.endsWith("px") || strHeight.endsWith("%"))) {
+            try {
+                int intHeight = Integer.parseInt(strHeight.replace("px", "").replace("%", "").trim());
+                if (strHeight.endsWith("px")) {
+                    renderNode.setHeight(intHeight);
+                } else {
+                    renderNode.setHeight(getHeightFromParent(renderNode, intHeight));
+                }
+            } catch (NumberFormatException e) {
+                // Игнорируем некорректные значения (например, "auto", "inherit" и т. д.)
             }
-        } else if (renderNode.getTagName().equals("text")){
+        } else if (renderNode.getTagName().equals("text")) {
             setHeightOfText(renderNode);
         }
     }
+
 
     private void setHeightOfText(RenderNode renderNode) {
         String textContent = renderNode.getTextContent();
@@ -478,12 +479,8 @@ public class MergeCssomDom {
             selectors = selectors.subList(1, selectors.size());
             if (selectors.isEmpty()) {
                 if (cssRule.getMedia() != null && !cssRule.getMedia().isEmpty()) {
-                    System.out.println(matchMedia(cssRule.getMedia()));
-                    System.out.println("hello world");
-                    System.out.println(cssRule.getMedia());
-                    System.out.println(cssRule.toCssString());
+                    System.out.println(matchMedia(cssRule.getMedia()));;
                     if (matchMedia(cssRule.getMedia())){
-                        System.out.println("Miside");
                         computeStyles(cssRule, renderNode);
                     }
                 } else {
